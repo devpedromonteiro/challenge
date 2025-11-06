@@ -48,6 +48,24 @@ export const badRequest = (error: Error): HttpResponse<Error> => ({
 });
 
 /**
+ * Creates an unauthorized response (401)
+ * @returns HTTP response object
+ */
+export const unauthorized = (): HttpResponse<Error> => ({
+    statusCode: 401,
+    data: new Error("Unauthorized"),
+});
+
+/**
+ * Creates a forbidden response (403)
+ * @returns HTTP response object
+ */
+export const forbidden = (): HttpResponse<Error> => ({
+    statusCode: 403,
+    data: new Error("Forbidden"),
+});
+
+/**
  * Creates a not found response (404)
  * @param error - Error object
  * @returns HTTP response object

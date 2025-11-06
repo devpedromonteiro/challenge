@@ -1,4 +1,4 @@
-import { Controller } from "@/application/controllers";
+import { Controller } from "@/application/controllers/controller";
 import { notFound, ok, type HttpResponse } from "@/application/helpers";
 import { RequiredNumber, type Validator } from "@/application/validation";
 import type { TaskModel } from "@/domain/contracts/repos";
@@ -7,6 +7,7 @@ import type { LoadTaskById } from "@/domain/use-cases";
 
 type HttpRequest = {
     id?: number;
+    userId?: string;
 };
 
 type Model = Error | TaskModel;
@@ -35,8 +36,11 @@ export class LoadTaskByIdController extends Controller {
      */
     async perform(httpRequest: HttpRequest): Promise<HttpResponse<Model>> {
         try {
+            const { id, userId } = httpRequest;
+
             const task = await this.loadTaskById({
-                id: httpRequest.id as number,
+                id: id as number,
+                userId: Number(userId),
             });
 
             return ok(task);
@@ -48,4 +52,3 @@ export class LoadTaskByIdController extends Controller {
         }
     }
 }
-

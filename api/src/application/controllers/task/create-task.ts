@@ -1,6 +1,10 @@
-import { Controller } from "@/application/controllers";
+import { Controller } from "@/application/controllers/controller";
 import { created, type HttpResponse } from "@/application/helpers";
-import { ForbiddenField, RequiredString, type Validator } from "@/application/validation";
+import {
+    ForbiddenField,
+    RequiredString,
+    type Validator,
+} from "@/application/validation";
 import type { TaskModel } from "@/domain/contracts/repos";
 import type { CreateTask } from "@/domain/use-cases";
 
@@ -11,6 +15,7 @@ type HttpRequest = {
     status?: string;
     createdAt?: string;
     updatedAt?: string;
+    userId?: string;
 };
 
 type Model = Error | TaskModel;
@@ -45,14 +50,14 @@ export class CreateTaskController extends Controller {
      * @returns HTTP response with created task or error
      */
     async perform(httpRequest: HttpRequest): Promise<HttpResponse<Model>> {
-        const { title, description } = httpRequest;
+        const { title, description, userId } = httpRequest;
 
         const task = await this.createTask({
             title: title as string,
             description: description as string,
+            userId: Number(userId),
         });
 
         return created(task);
     }
 }
-

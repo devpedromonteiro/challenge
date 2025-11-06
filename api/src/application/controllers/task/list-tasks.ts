@@ -1,4 +1,4 @@
-import { Controller } from "@/application/controllers";
+import { Controller } from "@/application/controllers/controller";
 import { ok, type HttpResponse } from "@/application/helpers";
 import { AllowedValues, type Validator } from "@/application/validation";
 import type { TaskModel } from "@/domain/contracts/repos";
@@ -7,6 +7,7 @@ import type { ListTasks } from "@/domain/use-cases";
 type HttpRequest = {
     status?: string;
     search?: string;
+    userId?: string;
 };
 
 type Model = Error | TaskModel[];
@@ -27,7 +28,9 @@ export class ListTasksController extends Controller {
     override buildValidators(httpRequest: HttpRequest): Validator[] {
         const ALLOWED_STATUS = ["pending", "completed"];
 
-        return [new AllowedValues(httpRequest.status, ALLOWED_STATUS, "status")];
+        return [
+            new AllowedValues(httpRequest.status, ALLOWED_STATUS, "status"),
+        ];
     }
 
     /**
@@ -36,14 +39,14 @@ export class ListTasksController extends Controller {
      * @returns HTTP response with tasks list or error
      */
     async perform(httpRequest: HttpRequest): Promise<HttpResponse<Model>> {
-        const { status, search } = httpRequest;
+        const { status, search, userId } = httpRequest;
 
         const tasks = await this.listTasks({
             status: status as "pending" | "completed" | undefined,
             search,
+            userId: Number(userId),
         });
 
         return ok(tasks);
     }
 }
-

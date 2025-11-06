@@ -1,11 +1,16 @@
-import { Controller } from "@/application/controllers";
+import { Controller } from "@/application/controllers/controller";
 import { noContent, notFound, type HttpResponse } from "@/application/helpers";
-import { AllowedValues, RequiredNumber, type Validator } from "@/application/validation";
+import {
+    AllowedValues,
+    RequiredNumber,
+    type Validator,
+} from "@/application/validation";
 import { TaskNotFoundError } from "@/domain/errors";
 import type { UpdateTask } from "@/domain/use-cases";
 
 type HttpRequest = {
     id?: number;
+    userId?: string;
     title?: string;
     description?: string;
     status?: string;
@@ -42,10 +47,11 @@ export class UpdateTaskController extends Controller {
      */
     async perform(httpRequest: HttpRequest): Promise<HttpResponse<Model>> {
         try {
-            const { id, title, description, status } = httpRequest;
+            const { id, userId, title, description, status } = httpRequest;
 
             await this.updateTask({
                 id: id as number,
+                userId: Number(userId),
                 title,
                 description,
                 status: status as "pending" | "completed" | undefined,
@@ -60,4 +66,3 @@ export class UpdateTaskController extends Controller {
         }
     }
 }
-

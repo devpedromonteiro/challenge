@@ -1,4 +1,4 @@
-import { Controller } from "@/application/controllers";
+import { Controller } from "@/application/controllers/controller";
 import { noContent, notFound, type HttpResponse } from "@/application/helpers";
 import { RequiredNumber, type Validator } from "@/application/validation";
 import { TaskNotFoundError } from "@/domain/errors";
@@ -6,6 +6,7 @@ import type { DeleteTask } from "@/domain/use-cases";
 
 type HttpRequest = {
     id?: number;
+    userId?: string;
 };
 
 type Model = Error | null;
@@ -34,8 +35,11 @@ export class DeleteTaskController extends Controller {
      */
     async perform(httpRequest: HttpRequest): Promise<HttpResponse<Model>> {
         try {
+            const { id, userId } = httpRequest;
+
             await this.deleteTask({
-                id: httpRequest.id as number,
+                id: id as number,
+                userId: Number(userId),
             });
 
             return noContent();
@@ -47,4 +51,3 @@ export class DeleteTaskController extends Controller {
         }
     }
 }
-
