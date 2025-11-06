@@ -2,7 +2,7 @@ import type { TaskRepository } from "@/domain/contracts/repos";
 import { TaskNotFoundError } from "@/domain/errors";
 
 type Setup = (taskRepository: TaskRepository) => DeleteTask;
-type Input = { id: number };
+type Input = { id: number; userId: number };
 
 export type DeleteTask = (input: Input) => Promise<void>;
 
@@ -13,13 +13,12 @@ export type DeleteTask = (input: Input) => Promise<void>;
  */
 export const setupDeleteTask: Setup =
     (taskRepository) =>
-    async ({ id }) => {
-        const task = await taskRepository.loadById(id);
+    async ({ id, userId }) => {
+        const task = await taskRepository.loadById(id, userId);
 
         if (!task) {
             throw new TaskNotFoundError();
         }
 
-        await taskRepository.deleteById(id);
+        await taskRepository.deleteById(id, userId);
     };
-

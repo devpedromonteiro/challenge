@@ -4,6 +4,7 @@ import { TaskNotFoundError } from "@/domain/errors";
 type Setup = (taskRepository: TaskRepository) => UpdateTask;
 type Input = {
     id: number;
+    userId: number;
     title?: string;
     description?: string;
     status?: "pending" | "completed";
@@ -18,8 +19,8 @@ export type UpdateTask = (input: Input) => Promise<void>;
  */
 export const setupUpdateTask: Setup =
     (taskRepository) =>
-    async ({ id, title, description, status }) => {
-        const task = await taskRepository.loadById(id);
+    async ({ id, userId, title, description, status }) => {
+        const task = await taskRepository.loadById(id, userId);
 
         if (!task) {
             throw new TaskNotFoundError();
@@ -33,4 +34,3 @@ export const setupUpdateTask: Setup =
 
         await taskRepository.update(id, params);
     };
-

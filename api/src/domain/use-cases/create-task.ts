@@ -1,7 +1,7 @@
 import type { CreateTaskParams, TaskModel, TaskRepository } from "@/domain/contracts/repos";
 
 type Setup = (taskRepository: TaskRepository) => CreateTask;
-type Input = { title: string; description: string };
+type Input = { title: string; description: string; userId: number };
 type Output = TaskModel;
 
 export type CreateTask = (input: Input) => Promise<Output>;
@@ -13,10 +13,11 @@ export type CreateTask = (input: Input) => Promise<Output>;
  */
 export const setupCreateTask: Setup =
     (taskRepository) =>
-    async ({ title, description }) => {
+    async ({ title, description, userId }) => {
         const params: CreateTaskParams = {
             title,
             description,
+            userId,
         };
 
         const task = await taskRepository.create(params);

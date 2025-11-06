@@ -16,6 +16,7 @@ export interface TaskModel {
 export interface CreateTaskParams {
     title: string;
     description: string;
+    userId: number;
 }
 
 /**
@@ -33,6 +34,7 @@ export interface UpdateTaskParams {
 export interface FilterTasksParams {
     status?: "pending" | "completed";
     search?: string;
+    userId: number;
 }
 
 /**
@@ -49,9 +51,10 @@ export interface TaskRepository {
     /**
      * Loads a task by ID
      * @param id - Task ID
+     * @param userId - User ID (to ensure user can only access their own tasks)
      * @returns Promise that resolves to the task or null if not found
      */
-    loadById(id: number): Promise<TaskModel | null>;
+    loadById(id: number, userId: number): Promise<TaskModel | null>;
 
     /**
      * Lists all tasks with optional filters
@@ -71,8 +74,9 @@ export interface TaskRepository {
     /**
      * Deletes a task by ID
      * @param id - Task ID
+     * @param userId - User ID (to ensure user can only delete their own tasks)
      * @returns Promise that resolves when deletion is complete
      */
-    deleteById(id: number): Promise<void>;
+    deleteById(id: number, userId: number): Promise<void>;
 }
 

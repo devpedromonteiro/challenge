@@ -2,7 +2,7 @@ import type { TaskModel, TaskRepository } from "@/domain/contracts/repos";
 import { TaskNotFoundError } from "@/domain/errors";
 
 type Setup = (taskRepository: TaskRepository) => LoadTaskById;
-type Input = { id: number };
+type Input = { id: number; userId: number };
 type Output = TaskModel;
 
 export type LoadTaskById = (input: Input) => Promise<Output>;
@@ -14,8 +14,8 @@ export type LoadTaskById = (input: Input) => Promise<Output>;
  */
 export const setupLoadTaskById: Setup =
     (taskRepository) =>
-    async ({ id }) => {
-        const task = await taskRepository.loadById(id);
+    async ({ id, userId }) => {
+        const task = await taskRepository.loadById(id, userId);
 
         if (!task) {
             throw new TaskNotFoundError();
