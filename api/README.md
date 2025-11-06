@@ -123,7 +123,9 @@ After starting the project locally:
 
 The `docs/openapi.yaml` file is the API contract. It describes endpoints, payloads, and responses.
 
-## Endpoints
+## API Endpoints
+
+All endpoints are available at `http://localhost:3000`
 
 ### GET /healthz
 
@@ -136,6 +138,10 @@ Health check endpoint.
   "timestamp": "2024-01-15T10:30:00.000Z"
 }
 ```
+
+---
+
+## Task Management Endpoints
 
 ### POST /tasks
 
