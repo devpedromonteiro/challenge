@@ -14,17 +14,17 @@ import { SqliteRepository } from "./repository";
 export class SqliteTaskRepository extends SqliteRepository implements TaskRepository {
     /**
      * Creates a new task
-     * @param data - Task data (title and description)
+     * @param data - Task data (title, description, userId)
      * @returns Promise that resolves to the created task with status starting as 'pending'
      */
     async create(data: CreateTaskParams): Promise<TaskModel> {
         const db = this.getDb();
         const stmt = db.prepare(`
-            INSERT INTO tasks (title, description)
-            VALUES (?, ?)
+            INSERT INTO tasks (title, description, userId)
+            VALUES (?, ?, ?)
         `);
 
-        const info = stmt.run(data.title, data.description);
+        const info = stmt.run(data.title, data.description, data.userId);
 
         const task = db
             .prepare("SELECT * FROM tasks WHERE id = ?")
@@ -43,11 +43,14 @@ export class SqliteTaskRepository extends SqliteRepository implements TaskReposi
     /**
      * Loads a task by ID
      * @param id - Task ID
+     * @param userId - User ID (to ensure user can only access their own tasks)
      * @returns Promise that resolves to the task or null if not found
      */
-    async loadById(id: number): Promise<TaskModel | null> {
+    async loadById(id: number, userId: number): Promise<TaskModel | null> {
         const db = this.getDb();
-        const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(id) as any;
+        const task = db
+            .prepare("SELECT * FROM tasks WHERE id = ? AND userId = ?")
+            .get(id, userId) as any;
 
         if (!task) {
             return null;
@@ -65,13 +68,13 @@ export class SqliteTaskRepository extends SqliteRepository implements TaskReposi
 
     /**
      * Lists all tasks with optional filters
-     * @param params - Filter parameters (status, search)
+     * @param params - Filter parameters (status, search, userId)
      * @returns Promise that resolves to an array of tasks
      */
     async listAll(params?: FilterTasksParams): Promise<TaskModel[]> {
         const db = this.getDb();
-        let query = "SELECT * FROM tasks WHERE 1=1";
-        const queryParams: any[] = [];
+        let query = "SELECT * FROM tasks WHERE userId = ?";
+        const queryParams: any[] = [params!.userId];
 
         if (params?.status) {
             query += " AND status = ?";
@@ -138,11 +141,14 @@ export class SqliteTaskRepository extends SqliteRepository implements TaskReposi
     /**
      * Deletes a task by ID
      * @param id - Task ID
+     * @param userId - User ID (to ensure user can only delete their own tasks)
      * @returns Promise that resolves when deletion is complete
      */
-    async deleteById(id: number): Promise<void> {
+    async deleteById(id: number, userId: number): Promise<void> {
         const db = this.getDb();
-        db.prepare("DELETE FROM tasks WHERE id = ?").run(id);
+        db.prepare("DELETE FROM tasks WHERE id = ? AND userId = ?").run(
+            id,
+            userId
+        );
     }
 }
-
