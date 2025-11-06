@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.jest-build/
+*.log
+.env
+.DS_Store
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
