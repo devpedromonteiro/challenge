@@ -8,5 +8,9 @@ export const env = {
     db: {
         path: process.env.DB_PATH || "./data/database.sqlite",
     },
+    jwt: {
+        secret:
+            process.env.JWT_SECRET || "your-secret-key-change-in-production",
+    },
 };
 
