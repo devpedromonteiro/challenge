@@ -1,0 +1,280 @@
+openapi: 3.1.0
+info:
+  title: Todo List API
+  version: 1.0.0
+  description: >
+    REST API for managing tasks (To-Do List). Full CRUD operations with filters and search capabilities.
+servers:
+  - url: http://localhost:3000
+    description: Development server
+paths:
+  /healthz:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the application.
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00.000Z"
+  /tasks:
+    post:
+      summary: Create a new task
+      description: Creates a new task with status 'pending'
+      tags:
+        - Tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskInput"
+      responses:
+        "201":
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "The field title is required"
+    get:
+      summary: List all tasks
+      description: Returns a list of all tasks with optional filters
+      tags:
+        - Tasks
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, completed]
+          description: Filter tasks by status
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search in title and description
+      responses:
+        "200":
+          description: List of tasks (can be empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+              example:
+                - id: 1
+                  title: Buy groceries
+                  description: Milk, eggs, and bread
+                  status: pending
+                  createdAt: "2024-01-15T10:00:00.000Z"
+                  updatedAt: "2024-01-15T10:00:00.000Z"
+                - id: 2
+                  title: Study TypeScript
+                  description: Learn advanced types and generics
+                  status: completed
+                  createdAt: "2024-01-14T09:00:00.000Z"
+                  updatedAt: "2024-01-15T11:00:00.000Z"
+  /tasks/{id}:
+    get:
+      summary: Load a specific task
+      description: Returns a task by ID
+      tags:
+        - Tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Task ID
+      responses:
+        "200":
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "id must be a valid number"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Task not found"
+    put:
+      summary: Update a task
+      description: Updates title, description, and/or status of a task
+      tags:
+        - Tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Task ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskInput"
+      responses:
+        "204":
+          description: Updated successfully (no content)
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "status must be one of: \"pending\", \"completed\""
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Task not found"
+    delete:
+      summary: Delete a task
+      description: Removes a task from the database
+      tags:
+        - Tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Task ID
+      responses:
+        "204":
+          description: Task deleted successfully (no content)
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "id must be a valid number"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Task not found"
+
+components:
+  schemas:
+    Task:
+      type: object
+      required: [id, title, description, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Buy groceries
+        description:
+          type: string
+          example: Milk, eggs, and bread
+        status:
+          type: string
+          enum: [pending, completed]
+          example: pending
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:00:00.000Z"
+
+    CreateTaskInput:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+          description: Task title (cannot be empty)
+          minLength: 1
+        description:
+          type: string
+          description: Task description (cannot be empty)
+          minLength: 1
+      example:
+        title: Buy groceries
+        description: Milk, eggs, and bread
+
+    UpdateTaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Task title (cannot be empty)
+          minLength: 1
+        description:
+          type: string
+          description: Task description (cannot be empty)
+          minLength: 1
+        status:
+          type: string
+          enum: [pending, completed]
+          description: Task status
+      example:
+        title: Buy groceries and fruits
+        description: Milk, eggs, bread, apples, and bananas
+        status: completed
+
