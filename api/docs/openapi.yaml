@@ -1,12 +1,14 @@
 openapi: 3.1.0
 info:
   title: Todo List API
-  version: 1.0.0
+  version: 2.0.0
   description: >
-    REST API for managing tasks (To-Do List). Full CRUD operations with filters and search capabilities.
+    REST API for managing tasks (To-Do List) with user authentication.
+    Full CRUD operations with JWT authentication, filters and search capabilities.
 servers:
   - url: http://localhost:3000
     description: Development server
+
 paths:
   /healthz:
     get:
@@ -29,12 +31,82 @@ paths:
                     type: string
                     format: date-time
                     example: "2024-01-15T10:30:00.000Z"
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Creates a new user account with email, name, and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          description: Validation error or email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                validationError:
+                  value:
+                    error: "The field email is required"
+                emailInUse:
+                  value:
+                    error: "Email already in use"
+
+  /auth/login:
+    post:
+      summary: User login
+      description: Authenticates a user and returns a JWT access token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Unauthorized"
+
   /tasks:
     post:
       summary: Create a new task
-      description: Creates a new task with status 'pending'
+      description: Creates a new task with status 'pending'. Requires authentication.
       tags:
         - Tasks
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -53,16 +125,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "The field title is required"
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     get:
       summary: List all tasks
-      description: Returns a list of all tasks with optional filters
+      description: Returns a list of tasks for the authenticated user with optional filters
       tags:
         - Tasks
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: status
@@ -97,12 +173,21 @@ paths:
                   status: completed
                   createdAt: "2024-01-14T09:00:00.000Z"
                   updatedAt: "2024-01-15T11:00:00.000Z"
+        "403":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /tasks/{id}:
     get:
       summary: Load a specific task
-      description: Returns a task by ID
+      description: Returns a task by ID. Only returns tasks owned by the authenticated user.
       tags:
         - Tasks
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -117,31 +202,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Task"
-        "400":
-          description: Invalid ID
+        "403":
+          description: Authentication required
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "id must be a valid number"
+                $ref: "#/components/schemas/Error"
         "404":
-          description: Task not found
+          description: Task not found or doesn't belong to user
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Task not found"
+                $ref: "#/components/schemas/Error"
     put:
       summary: Update a task
-      description: Updates title, description, and/or status of a task
+      description: Updates title, description, and/or status of a task. Only updates tasks owned by the authenticated user.
       tags:
         - Tasks
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -163,26 +242,26 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "status must be one of: \"pending\", \"completed\""
-        "404":
-          description: Task not found
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Authentication required
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Task not found"
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Task not found or doesn't belong to user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       summary: Delete a task
-      description: Removes a task from the database
+      description: Removes a task from the database. Only deletes tasks owned by the authenticated user.
       tags:
         - Tasks
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -193,29 +272,111 @@ paths:
       responses:
         "204":
           description: Task deleted successfully (no content)
-        "400":
-          description: Invalid ID
+        "403":
+          description: Authentication required
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "id must be a valid number"
+                $ref: "#/components/schemas/Error"
         "404":
-          description: Task not found
+          description: Task not found or doesn't belong to user
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Task not found"
+                $ref: "#/components/schemas/Error"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT token in the format "Bearer {token}"
+
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error message"
+
+    RegisterInput:
+      type: object
+      required: [email, name, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: "user@example.com"
+        name:
+          type: string
+          description: User full name
+          minLength: 1
+          example: "John Doe"
+        password:
+          type: string
+          description: User password (will be hashed)
+          minLength: 6
+          example: "SecurePass123!"
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: "user@example.com"
+        password:
+          type: string
+          description: User password
+          example: "SecurePass123!"
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:00:00.000Z"
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (valid for 24 hours)
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            email:
+              type: string
+              example: "user@example.com"
+            name:
+              type: string
+              example: "John Doe"
+
     Task:
       type: object
       required: [id, title, description, status, createdAt, updatedAt]
@@ -277,4 +438,3 @@ components:
         title: Buy groceries and fruits
         description: Milk, eggs, bread, apples, and bananas
         status: completed
-
