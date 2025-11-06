@@ -9,4 +9,5 @@ coverage/
 *.db-journal
 *.sqlite
 *.sqlite3
+data/database.sqlite-*
 
