@@ -1,6 +1,6 @@
 # Todo List API
 
-REST API for task management (To-Do List) developed with Node.js 22 LTS, TypeScript, Express and SQLite.
+REST API for task management (To-Do List) with JWT authentication developed with Node.js 22 LTS, TypeScript, Express and SQLite.
 
 ## Technologies
 
@@ -8,6 +8,8 @@ REST API for task management (To-Do List) developed with Node.js 22 LTS, TypeScr
 - **TypeScript**: 5.9.3
 - **Express**: 5.1.0
 - **SQLite**: via better-sqlite3 11.5.0
+- **bcrypt**: 5.1.1 (password hashing)
+- **jsonwebtoken**: 9.0.2 (JWT authentication)
 - **Helmet**: 8.1.0 (security)
 - **Jest**: 30.2.0 (testing)
 - **Biome**: 2.3.0 (linter + formatter)
@@ -15,9 +17,20 @@ REST API for task management (To-Do List) developed with Node.js 22 LTS, TypeScr
 
 ## Features
 
+### Authentication & Security
+- ✅ User registration and login
+- ✅ JWT token-based authentication
+- ✅ Password hashing with bcrypt (salt 12)
+- ✅ Protected routes with authentication middleware
+- ✅ User data isolation (users can only access their own tasks)
+
+### Task Management
 - ✅ Full CRUD operations for tasks
 - ✅ Filter tasks by status (pending, completed)
 - ✅ Search tasks by title or description
+- ✅ Tasks associated with authenticated users
+
+### Architecture & Quality
 - ✅ SQLite database for local persistence
 - ✅ REST API following best practices
 - ✅ Clean Architecture pattern
@@ -26,6 +39,7 @@ REST API for task management (To-Do List) developed with Node.js 22 LTS, TypeScr
 - ✅ OpenAPI/Swagger documentation
 - ✅ Input validation
 - ✅ Error handling
+- ✅ Security best practices
 
 ## Requirements
 
