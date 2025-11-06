@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 
@@ -6,6 +7,7 @@ import helmet from "helmet";
  * @param app - Express application instance
  */
 export const applyMiddlewares = (app: Express): void => {
+    app.use(cors());
     app.use(express.json());
     app.use(helmet());
     app.use((_req, res, next) => {
@@ -13,4 +15,3 @@ export const applyMiddlewares = (app: Express): void => {
         next();
     });
 };
-
